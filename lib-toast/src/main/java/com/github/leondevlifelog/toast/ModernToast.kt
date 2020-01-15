@@ -7,8 +7,11 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.IntRange
+import androidx.annotation.StringRes
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import com.mikhaellopez.circularprogressbar.CircularProgressBar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -18,10 +21,11 @@ class ModernToast(private val activity: FragmentActivity) {
     val TAG: String = "ModernToast"
     var duration: Long = 1000
     var cancelable: Boolean = false
-    var outSideTouchable: Boolean = false
+    var outSideTouchable: Boolean = true
     var text: String? = null
     private lateinit var contentView: FrameLayout
     private var ivStatus: ImageView
+    private var cpbProgress: CircularProgressBar
     private var tvTip: TextView
     private var timer: Job? = null
     private val onBackPressed = object : OnBackPressedCallback(cancelable) {
@@ -44,22 +48,32 @@ class ModernToast(private val activity: FragmentActivity) {
                 ) as FrameLayout
             rootLayout.addView(contentView)
         }
+        cpbProgress = contentView.findViewById(R.id.cpbProgress)
         ivStatus = contentView.findViewById(R.id.ivStatus)
         tvTip = contentView.findViewById(R.id.tvTip)
     }
 
-    fun show(f: ModernToast.() -> Unit): ModernToast {
+    private fun show(imageMode: Boolean, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        if (imageMode) {
+            ivStatus.visibility = View.VISIBLE
+            cpbProgress.visibility = View.GONE
+        } else {
+            ivStatus.visibility = View.GONE
+            cpbProgress.visibility = View.VISIBLE
+        }
         if (isShowing()) {
             Log.d(TAG, "show: cancel")
             timer?.cancel()
         }
-        this.f()
+        f?.invoke(this)
         tvTip.text = text
         contentView.visibility = View.VISIBLE
-        timer = activity.lifecycleScope.launch {
-            delay(duration)
-            if (isActive) {
-                dismiss()
+        if (imageMode) {
+            timer = activity.lifecycleScope.launch {
+                delay(duration)
+                if (isActive) {
+                    dismiss()
+                }
             }
         }
         contentView.isClickable = !outSideTouchable
@@ -67,24 +81,46 @@ class ModernToast(private val activity: FragmentActivity) {
         return this
     }
 
-    fun showSuccess(f: ModernToast.() -> Unit): ModernToast {
+    fun showSuccess(@StringRes id: Int, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        text = activity.getString(id)
         ivStatus.setImageResource(R.drawable.icon_success)
-        return show(f)
+        return show(true, f)
     }
 
-    fun showInfo(f: ModernToast.() -> Unit): ModernToast {
+    fun showSuccess(text: String, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        ivStatus.setImageResource(R.drawable.icon_success)
+        this.text = text
+        return show(true, f)
+    }
+
+    fun showInfo(f: (ModernToast.() -> Unit)? = null): ModernToast {
         ivStatus.setImageResource(R.drawable.icon_info)
-        return show(f)
+        return show(true, f)
     }
 
-    fun showError(f: ModernToast.() -> Unit): ModernToast {
+    fun showError(f: (ModernToast.() -> Unit)? = null): ModernToast {
         ivStatus.setImageResource(R.drawable.icon_error)
-        return show(f)
+        return show(true, f)
     }
 
-    fun showLoading(f: ModernToast.() -> Unit): ModernToast {
-        // TODO: 20-1-15 loading动画待实现
-        return show(f)
+    fun showProgress(
+        @IntRange(
+            from = 0,
+            to = 100
+        ) progress: Long, text: String = "加载中...", f: (ModernToast.() -> Unit)? = null
+    ): ModernToast {
+        this.text = text
+        cpbProgress.progress = progress.toFloat()
+        return show(false, f)
+    }
+
+    fun setProgress(
+        @IntRange(
+            from = 0,
+            to = 100
+        ) progress: Long
+    ): Unit {
+        cpbProgress.progress = progress.toFloat()
     }
 
     /**

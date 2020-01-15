@@ -1,6 +1,7 @@
 package com.github.leondevlifelog.moderntoast
 
 import android.os.Bundle
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.github.leondevlifelog.toast.ModernToast
 import kotlinx.android.synthetic.main.activity_main.*
@@ -12,10 +13,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         toast = ModernToast(this)
         btnShow.setOnClickListener {
-            toast.show {
-                outSideTouchable = true
-                text = "show"
-            }
         }
         btnShowInfo.setOnClickListener {
             toast.showInfo {
@@ -24,10 +21,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         btnShowSuccess.setOnClickListener {
-            toast.showSuccess {
-                outSideTouchable = true
-                text = "showSuccess"
-            }
+            toast.showSuccess("成功")
         }
         btnShowError.setOnClickListener {
             toast.showError {
@@ -35,6 +29,17 @@ class MainActivity : AppCompatActivity() {
                 text = "showError"
             }
         }
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                toast.showProgress(progress.toLong())
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            }
+        })
     }
 
 }
