@@ -29,6 +29,9 @@ class MainActivity : AppCompatActivity() {
                 text = "showError"
             }
         }
+        btnLoading.setOnClickListener {
+            toast.showLoading()
+        }
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 toast.showProgress(progress.toLong())

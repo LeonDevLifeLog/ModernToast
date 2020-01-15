@@ -1,6 +1,5 @@
 package com.github.leondevlifelog.toast
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
@@ -28,6 +27,11 @@ class ModernToast(private val activity: FragmentActivity) {
     private var cpbProgress: CircularProgressBar
     private var tvTip: TextView
     private var timer: Job? = null
+
+    private enum class MODE {
+        LOADING, PROGRESS, TOAST
+    }
+
     private val onBackPressed = object : OnBackPressedCallback(cancelable) {
         override fun handleOnBackPressed() {
             dismiss()
@@ -53,22 +57,28 @@ class ModernToast(private val activity: FragmentActivity) {
         tvTip = contentView.findViewById(R.id.tvTip)
     }
 
-    private fun show(imageMode: Boolean, f: (ModernToast.() -> Unit)? = null): ModernToast {
-        if (imageMode) {
-            ivStatus.visibility = View.VISIBLE
-            cpbProgress.visibility = View.GONE
-        } else {
-            ivStatus.visibility = View.GONE
-            cpbProgress.visibility = View.VISIBLE
+    private fun show(mode: MODE, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        when (mode) {
+            MODE.LOADING -> {
+                ivStatus.visibility = View.GONE
+                cpbProgress.visibility = View.VISIBLE
+            }
+            MODE.PROGRESS -> {
+                ivStatus.visibility = View.GONE
+                cpbProgress.visibility = View.VISIBLE
+            }
+            MODE.TOAST -> {
+                ivStatus.visibility = View.VISIBLE
+                cpbProgress.visibility = View.GONE
+            }
         }
         if (isShowing()) {
-            Log.d(TAG, "show: cancel")
             timer?.cancel()
         }
         f?.invoke(this)
         tvTip.text = text
         contentView.visibility = View.VISIBLE
-        if (imageMode) {
+        if (mode != MODE.PROGRESS) {
             timer = activity.lifecycleScope.launch {
                 delay(duration)
                 if (isActive) {
@@ -84,23 +94,23 @@ class ModernToast(private val activity: FragmentActivity) {
     fun showSuccess(@StringRes id: Int, f: (ModernToast.() -> Unit)? = null): ModernToast {
         text = activity.getString(id)
         ivStatus.setImageResource(R.drawable.icon_success)
-        return show(true, f)
+        return show(MODE.TOAST, f)
     }
 
     fun showSuccess(text: String, f: (ModernToast.() -> Unit)? = null): ModernToast {
         ivStatus.setImageResource(R.drawable.icon_success)
         this.text = text
-        return show(true, f)
+        return show(MODE.TOAST, f)
     }
 
     fun showInfo(f: (ModernToast.() -> Unit)? = null): ModernToast {
         ivStatus.setImageResource(R.drawable.icon_info)
-        return show(true, f)
+        return show(MODE.TOAST, f)
     }
 
     fun showError(f: (ModernToast.() -> Unit)? = null): ModernToast {
         ivStatus.setImageResource(R.drawable.icon_error)
-        return show(true, f)
+        return show(MODE.TOAST, f)
     }
 
     fun showProgress(
@@ -111,7 +121,17 @@ class ModernToast(private val activity: FragmentActivity) {
     ): ModernToast {
         this.text = text
         cpbProgress.progress = progress.toFloat()
-        return show(false, f)
+        cpbProgress.indeterminateMode = false
+        return show(MODE.PROGRESS, f)
+    }
+
+    fun showLoading(
+        text: String = "加载中...", duration: Long = 3000, f: (ModernToast.() -> Unit)? = null
+    ): ModernToast {
+        this.text = text
+        this.duration = duration
+        cpbProgress.indeterminateMode = true
+        return show(MODE.LOADING, f)
     }
 
     fun setProgress(
