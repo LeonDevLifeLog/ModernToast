@@ -35,12 +35,61 @@ import kotlinx.coroutines.launch
 /**
  * 现代化的Toast
  */
-class ModernToast(private val activity: FragmentActivity) {
-    var duration: Long = 1000
-    var cancelable: Boolean = false
-    var outSideTouchable: Boolean = true
+class ModernToast private constructor(
+    private val activity: FragmentActivity,
+    private val contentView: FrameLayout
+) {
+    companion object {
+        /**
+         * 获取[ModernToast]实例
+         * @param activity 需要显示Toast的Activity
+         */
+        @JvmStatic
+        fun with(activity: FragmentActivity): ModernToast {
+            var modernToast: ModernToast? = null
+            val rootLayout = activity.findViewById<FrameLayout>(android.R.id.content)
+            var contentView = rootLayout.findViewById<FrameLayout?>(R.id.libToastLayout)
+            if (contentView == null) {
+                contentView = (LayoutInflater.from(activity).inflate(
+                    R.layout.toast_layout,
+                    rootLayout,
+                    false
+                ) as FrameLayout).apply {
+                    modernToast = ModernToast(activity, this)
+                    tag = modernToast
+                }
+                rootLayout.addView(contentView)
+            } else {
+                if (contentView.tag is ModernToast) {
+                    modernToast = contentView.tag as ModernToast
+                }
+            }
+            if (modernToast == null) {
+                modernToast = ModernToast(activity, contentView)
+            }
+            return modernToast!!
+        }
+    }
+
+    private val durationDefault: Long = 1000
+    /**
+     * 显示时长
+     */
+    var duration: Long = durationDefault
+    private val cancelableDefault = false
+    /**
+     * 是否可通过返回键取消
+     */
+    var cancelable: Boolean = cancelableDefault
+    private val outSideTouchableDefault = true
+    /**
+     * Toast外部是否可点击
+     */
+    var outSideTouchable: Boolean = outSideTouchableDefault
+    /**
+     * 提示信息
+     */
     var text: String? = null
-    private lateinit var contentView: FrameLayout
     private var ivStatus: ImageView
     private var cpbProgress: CircularProgressBar
     private var tvTip: TextView
@@ -71,27 +120,12 @@ class ModernToast(private val activity: FragmentActivity) {
     }
 
     init {
-        val rootLayout = activity.findViewById<FrameLayout>(android.R.id.content)
-        rootLayout.findViewById<FrameLayout?>(R.id.libToastLayout)?.let {
-            contentView = it
-        }
-        if (!::contentView.isInitialized) {
-            contentView =
-                LayoutInflater.from(activity).inflate(
-                    R.layout.toast_layout,
-                    rootLayout,
-                    false
-                ) as FrameLayout
-            rootLayout.addView(contentView)
-        }
+        activity.onBackPressedDispatcher.addCallback(activity, onBackPressed)
         cpbProgress = contentView.findViewById(R.id.cpbProgress)
         ivStatus = contentView.findViewById(R.id.ivStatus)
         tvTip = contentView.findViewById(R.id.tvTip)
     }
 
-    /**
-     * 显示指定模式的Toast
-     */
     private fun show(mode: MODE, f: (ModernToast.() -> Unit)? = null): ModernToast {
         when (mode) {
             MODE.LOADING -> {
@@ -108,7 +142,7 @@ class ModernToast(private val activity: FragmentActivity) {
             }
         }
         if (isShowing()) {
-            timer?.cancel()
+            cancelTimer()
         }
         f?.invoke(this)
         tvTip.text = text
@@ -122,8 +156,18 @@ class ModernToast(private val activity: FragmentActivity) {
             }
         }
         contentView.isClickable = !outSideTouchable
-        activity.onBackPressedDispatcher.addCallback(activity, onBackPressed)
+        onBackPressed.isEnabled = cancelable
         return this
+    }
+
+    private fun cancelTimer() {
+        timer?.cancel()
+    }
+
+    private fun resetState() {
+        cancelable = cancelableDefault
+        duration = durationDefault
+        outSideTouchable = outSideTouchableDefault
     }
 
     /**
@@ -133,6 +177,7 @@ class ModernToast(private val activity: FragmentActivity) {
      * @return 返回Toast实例
      */
     fun showSuccess(@StringRes id: Int, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        resetState()
         text = activity.getString(id)
         ivStatus.setImageResource(R.drawable.icon_success)
         return show(MODE.TOAST, f)
@@ -145,6 +190,7 @@ class ModernToast(private val activity: FragmentActivity) {
      * @return 返回Toast实例
      */
     fun showSuccess(text: String, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        resetState()
         ivStatus.setImageResource(R.drawable.icon_success)
         this.text = text
         return show(MODE.TOAST, f)
@@ -153,9 +199,25 @@ class ModernToast(private val activity: FragmentActivity) {
     /**
      * 显示提示Toast
      * @param f 对显示配置的回调
+     * @param text 提示字符
      * @return 返回Toast实例
      */
-    fun showInfo(f: (ModernToast.() -> Unit)? = null): ModernToast {
+    fun showInfo(text: String, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        resetState()
+        this.text = text
+        ivStatus.setImageResource(R.drawable.icon_info)
+        return show(MODE.TOAST, f)
+    }
+
+    /**
+     * 显示提示Toast
+     * @param f 对显示配置的回调
+     * @param id 提示字符资源id
+     * @return 返回Toast实例
+     */
+    fun showInfo(@StringRes id: Int, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        resetState()
+        this.text = activity.getString(id)
         ivStatus.setImageResource(R.drawable.icon_info)
         return show(MODE.TOAST, f)
     }
@@ -163,9 +225,25 @@ class ModernToast(private val activity: FragmentActivity) {
     /**
      * 显示错误Toast
      * @param f 对显示配置的回调
+     * @param text 提示字符
      * @return 返回Toast实例
      */
-    fun showError(f: (ModernToast.() -> Unit)? = null): ModernToast {
+    fun showError(text: String, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        resetState()
+        this.text = text
+        ivStatus.setImageResource(R.drawable.icon_error)
+        return show(MODE.TOAST, f)
+    }
+
+    /**
+     * 显示错误Toast
+     * @param f 对显示配置的回调
+     * @param id 提示字符资源id
+     * @return 返回Toast实例
+     */
+    fun showError(@StringRes id: Int, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        resetState()
+        this.text = activity.getString(id)
         ivStatus.setImageResource(R.drawable.icon_error)
         return show(MODE.TOAST, f)
     }
@@ -183,6 +261,7 @@ class ModernToast(private val activity: FragmentActivity) {
             to = 100
         ) progress: Long, text: String = "加载中...", f: (ModernToast.() -> Unit)? = null
     ): ModernToast {
+        resetState()
         this.text = text
         cpbProgress.progress = progress.toFloat()
         cpbProgress.indeterminateMode = false
@@ -199,6 +278,7 @@ class ModernToast(private val activity: FragmentActivity) {
     fun showLoading(
         text: String = "加载中...", duration: Long = 3000, f: (ModernToast.() -> Unit)? = null
     ): ModernToast {
+        resetState()
         this.text = text
         this.duration = duration
         cpbProgress.indeterminateMode = true
@@ -223,6 +303,7 @@ class ModernToast(private val activity: FragmentActivity) {
      *取消toast显示
      */
     fun dismiss() {
+        resetState()
         contentView.visibility = View.GONE
     }
 

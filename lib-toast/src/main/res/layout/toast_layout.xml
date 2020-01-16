@@ -56,6 +56,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:maxWidth="120dp"
+            android:minLines="1"
             android:text="正在加载"
             android:textColor="#fff"
             app:layout_constraintBottom_toBottomOf="parent"

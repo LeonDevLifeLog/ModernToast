@@ -27,26 +27,22 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        toast = ModernToast(this)
+        toast = ModernToast.with(this)
         btnShow.setOnClickListener {
         }
         btnShowInfo.setOnClickListener {
-            toast.showInfo {
-                outSideTouchable = true
-                text = "showInfo"
-            }
+            toast.showInfo("提示信息")
         }
         btnShowSuccess.setOnClickListener {
             toast.showSuccess("成功")
         }
         btnShowError.setOnClickListener {
-            toast.showError {
-                outSideTouchable = true
-                text = "showError"
-            }
+            toast.showError("错误信息")
         }
         btnLoading.setOnClickListener {
-            toast.showLoading()
+            toast.showLoading() {
+                cancelable = true
+            }
         }
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
