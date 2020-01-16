@@ -162,6 +162,7 @@ class ModernToast private constructor(
     }
 
     private fun cancelTimer() {
+        onBackPressed.isEnabled = false
         timer?.cancel()
     }
 
@@ -339,6 +340,7 @@ class ModernToast private constructor(
      */
     fun dismiss() {
         resetState()
+        onBackPressed.isEnabled = false
         contentView.visibility = View.GONE
     }
 
