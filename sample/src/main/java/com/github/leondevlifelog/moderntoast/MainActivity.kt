@@ -17,24 +17,38 @@
 package com.github.leondevlifelog.moderntoast
 
 import android.os.Bundle
-import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.github.leondevlifelog.toast.ModernToast
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var toast: ModernToast
+    private var index: Long = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         toast = ModernToast.with(this)
         btnShow.setOnClickListener {
+            lifecycleScope.launch {
+                index = 0
+                while (index < 101) {
+                    toast.showProgress(index) {
+                        outSideTouchable = false
+                    }
+                    delay(15)
+                    index++
+                }
+                toast.dismiss()
+            }
         }
         btnShowInfo.setOnClickListener {
             toast.showInfo("提示信息")
         }
         btnShowSuccess.setOnClickListener {
-            toast.showSuccess("成功")
+            toast.showSuccess("成功信息")
         }
         btnShowError.setOnClickListener {
             toast.showError("错误信息")
@@ -44,17 +58,9 @@ class MainActivity : AppCompatActivity() {
                 cancelable = true
             }
         }
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                toast.showProgress(progress.toLong())
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-            }
-        })
+        btnCustom.setOnClickListener {
+            toast.showCustom("自定义", R.mipmap.ic_launcher)
+        }
     }
 
 }

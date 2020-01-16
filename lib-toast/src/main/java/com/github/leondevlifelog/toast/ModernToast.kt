@@ -22,6 +22,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.DrawableRes
 import androidx.annotation.IntRange
 import androidx.annotation.StringRes
 import androidx.fragment.app.FragmentActivity
@@ -249,6 +250,37 @@ class ModernToast private constructor(
     }
 
     /**
+     * 显示自定义Toast
+     * @param strRes 字符串资源id
+     * @param res 图片资源id
+     * @param f 对显示配置的回调
+     * @return 返回Toast实例
+     */
+    fun showCustom(@StringRes strRes: Int, @DrawableRes res: Int, f: (ModernToast.() -> Unit)? = null): ModernToast {
+        resetState()
+        this.text = activity.getString(strRes)
+        ivStatus.setImageResource(res)
+        return show(MODE.TOAST, f)
+    }
+
+    /**
+     * 显示自定义Toast
+     * @param text 提示
+     * @param res 图片资源id
+     * @param f 对显示配置的回调
+     * @return 返回Toast实例
+     */
+    fun showCustom(
+        text: String, @DrawableRes res: Int,
+        f: (ModernToast.() -> Unit)? = null
+    ): ModernToast {
+        resetState()
+        this.text = text
+        ivStatus.setImageResource(res)
+        return show(MODE.TOAST, f)
+    }
+
+    /**
      * 显示加载进度Toast
      * @param text 提示字符
      * @param progress 进度[0,100]
@@ -262,6 +294,9 @@ class ModernToast private constructor(
         ) progress: Long, text: String = "加载中...", f: (ModernToast.() -> Unit)? = null
     ): ModernToast {
         resetState()
+        if (progress == 100.toLong()) {
+            dismiss()
+        }
         this.text = text
         cpbProgress.progress = progress.toFloat()
         cpbProgress.indeterminateMode = false
