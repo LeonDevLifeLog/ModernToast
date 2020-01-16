@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="allproject" pattern="file[lib-toast]:src/main/*||file[lib-toast]:src/main/java/*||file[lib-toast]:src/main/res/*||file[sample]:src/main/*||file[sample]:src/main/java/*||file[sample]:src/main/res/*" />
+</component>
