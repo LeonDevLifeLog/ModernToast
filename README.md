@@ -4,7 +4,7 @@ ModernToast
 <img src="/preview/preview.gif" alt="sample" title="sample" width="300" height="635" align="right" vspace="24" />
 
 [![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
-[![API](https://img.shields.io/badge/API-14%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=14)
+[![API](https://img.shields.io/badge/API-15%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=14)
 [![](https://jitpack.io/v/LeonDevLifeLog/ModernToast.svg)](https://jitpack.io/#LeonDevLifeLog/ModernToast)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b66bd97e00024675ac1f0df7212e184d)](https://www.codacy.com/manual/LeonDevLifeLog/ModernToast?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LeonDevLifeLog/ModernToast&amp;utm_campaign=Badge_Grade)
 [![GitHub license](https://img.shields.io/github/license/LeonDevLifeLog/ModernToast)](https://github.com/LeonDevLifeLog/ModernToast/blob/master/LICENSE)
