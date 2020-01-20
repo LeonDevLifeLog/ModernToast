@@ -11,6 +11,10 @@ ModernToast
 
 一款现代化的Toast!
 
+<a href="https://play.google.com/store/apps/details?id=com.github.leondevlifelog.moderntoast">
+  <img alt="Android app on Google Play" src="https://developer.android.com/images/brand/en_app_rgb_wo_45.png" />
+</a>
+
 ## Installation
 
 Step 1. Add the JitPack repository to your build file  
